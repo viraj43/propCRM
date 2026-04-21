@@ -1,0 +1,237 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  AGENT
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  CLOSED
+  LOST
+}
+
+enum LeadSource {
+  WEBSITE
+  ADS
+  CALL
+  REFERRAL
+  PORTAL
+  OTHER
+}
+
+enum PropertyType {
+  RESIDENTIAL
+  COMMERCIAL
+  LAND
+  INDUSTRIAL
+}
+
+enum PropertyStatus {
+  AVAILABLE
+  SOLD
+  RENTED
+  UNDER_NEGOTIATION
+}
+
+enum ClientType {
+  BUYER
+  SELLER
+  TENANT
+  LANDLORD
+}
+
+enum DealStage {
+  INQUIRY
+  NEGOTIATION
+  AGREEMENT
+  CLOSED
+  LOST
+}
+
+enum InteractionType {
+  CALL
+  EMAIL
+  VISIT
+  MEETING
+  NOTE
+}
+
+model User {
+  id          String    @id @default(cuid())
+  name        String
+  email       String    @unique
+  password    String
+  role        Role      @default(AGENT)
+  phone       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  leads         Lead[]              @relation("AssignedAgent")
+  properties    Property[]
+  deals         Deal[]
+  messages      ChatMessage[]
+  reactions     MessageReaction[]
+  channelMemberships ChannelMember[] 
+}
+
+model Channel {
+  id          String          @id @default(cuid())
+  name        String          @unique
+  description String?
+  createdBy   String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  members     ChannelMember[]
+  messages    ChatMessage[]
+}
+
+model ChannelMember {
+  id        String   @id @default(cuid())
+  channel   Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  channelId String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  addedAt   DateTime @default(now())
+
+  @@unique([channelId, userId])
+}
+
+model Lead {
+  id           String      @id @default(cuid())
+  name         String
+  phone        String
+  email        String?
+  budget       Float?
+  source       LeadSource  @default(OTHER)
+  status       LeadStatus  @default(NEW)
+  preferences  String?
+  notes        String?
+  assignedTo   User?       @relation("AssignedAgent", fields: [agentId], references: [id])
+  agentId      String?
+  client       Client?
+  followUps    FollowUp[]
+  score        Int         @default(0)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model FollowUp {
+  id          String    @id @default(cuid())
+  lead        Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  leadId      String
+  scheduledAt DateTime
+  note        String?
+  isDone      Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+}
+
+model Property {
+  id          String          @id @default(cuid())
+  title       String
+  type        PropertyType    @default(RESIDENTIAL)
+  location    String?
+  price       Float?
+  size        Float?
+  amenities   String?
+  images      String[]
+  status      PropertyStatus  @default(AVAILABLE)
+  description String?
+  agent       User?           @relation(fields: [agentId], references: [id])
+  agentId     String?
+  deals       Deal[]
+  isExternal  Boolean         @default(false)
+  sourceUrl   String?
+  sourceName  String?
+  snippet     String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model Client {
+  id           String         @id @default(cuid())
+  name         String
+  phone        String
+  email        String?
+  type         ClientType     @default(BUYER)
+  notes        String?
+  lead         Lead?          @relation(fields: [leadId], references: [id])
+  leadId       String?        @unique
+  interactions Interaction[]
+  deals        Deal[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model Interaction {
+  id        String          @id @default(cuid())
+  client    Client          @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId  String
+  type      InteractionType @default(NOTE)
+  note      String
+  createdAt DateTime        @default(now())
+}
+
+model Deal {
+  id          String      @id @default(cuid())
+  client      Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId    String
+  property    Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId  String
+  agent       User        @relation(fields: [agentId], references: [id])
+  agentId     String
+  stage       DealStage   @default(INQUIRY)
+  value       Float
+  commission  Float?
+  notes       String?
+  documents   Document[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Document {
+  id        String   @id @default(cuid())
+  deal      Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  dealId    String
+  name      String
+  url       String
+  createdAt DateTime @default(now())
+}
+
+
+model ChatMessage {
+  id        String            @id @default(cuid())
+  content   String
+  sender    User              @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  senderId  String
+  createdAt DateTime          @default(now())
+
+  replyToId String?
+  replyTo   ChatMessage?      @relation("Replies", fields: [replyToId], references: [id])
+  replies   ChatMessage[]     @relation("Replies")
+  reactions MessageReaction[]
+
+  channelId String?           // ← ADD (null = global team chat)
+  channel   Channel?          @relation(fields: [channelId], references: [id], onDelete: Cascade)
+}
+
+model MessageReaction {
+  id        String      @id @default(cuid())
+  emoji     String
+  userId    String
+  messageId String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message   ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+}
