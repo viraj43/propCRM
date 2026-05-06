@@ -80,7 +80,6 @@ Lead_management/
 ### Prerequisites
 - Node.js (v18+)
 - PostgreSQL instance
-- SMTP credentials (for automated emails)
 
 ### Installation
 
