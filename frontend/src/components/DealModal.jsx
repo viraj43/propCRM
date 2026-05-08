@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
-import api from '../services/api';
+import api, { BASE_URL } from '../services/api';
 
 export default function DealModal({ deal, clients, properties, onClose, onSave }) {
   const [form, setForm] = useState({
@@ -105,7 +105,7 @@ export default function DealModal({ deal, clients, properties, onClose, onSave }
                 {deal.documents?.length > 0 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
                     {deal.documents.map(d => (
-                      <a key={d.id} href={`http://localhost:5000${d.url}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem', color: 'var(--accent)', textDecoration: 'none', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: 'var(--radius-sm)' }}>
+                      <a key={d.id} href={`${BASE_URL}${d.url}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem', color: 'var(--accent)', textDecoration: 'none', background: 'var(--bg-secondary)', padding: '8px 12px', borderRadius: 'var(--radius-sm)' }}>
                         📄 {d.name}
                       </a>
                     ))}

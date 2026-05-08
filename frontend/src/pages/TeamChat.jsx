@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import { Send, Users, Hash, Plus, Trash2, UserPlus, X, Reply, Settings, ChevronDown, ChevronRight } from 'lucide-react';
-import api from '../services/api';
+import api, { BASE_URL } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 
 const EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
@@ -102,7 +102,7 @@ export default function TeamChat() {
   // Socket setup
   useEffect(() => {
     const token = localStorage.getItem('crm_token');
-    const backendUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+    const backendUrl = BASE_URL;
 
     const newSocket = io(backendUrl, { auth: { token }, autoConnect: false, reconnectionAttempts: 5 });
     newSocket.connect();

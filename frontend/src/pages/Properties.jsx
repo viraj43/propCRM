@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, MapPin, Maximize2, Sparkles, X } from 'lucide-react';
-import api from '../services/api';
+import api, { BASE_URL } from '../services/api';
 import PropertyModal from '../components/PropertyModal';
 
 function fmt(num) {
@@ -156,7 +156,7 @@ export default function Properties() {
             ) : properties.map(p => (
               <div key={p.id} className="property-card" onClick={() => navigate(`/properties/${p.id}`)}>
                 {p.images && p.images.length > 0 ? (
-                  <img src={`http://localhost:5000${p.images[0]}`} alt={p.title} className="property-image" />
+                  <img src={`${BASE_URL}${p.images[0]}`} alt={p.title} className="property-image" />
                 ) : (
                   <div className="property-image" style={{ fontSize: '3.5rem' }}>{TYPE_ICONS[p.type] || '🏠'}</div>
                 )}

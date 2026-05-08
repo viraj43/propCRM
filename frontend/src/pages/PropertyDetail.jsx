@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin, Maximize2, DollarSign } from 'lucide-react';
-import api from '../services/api';
+import api, { BASE_URL } from '../services/api';
 
 function fmt(num) {
   if (num >= 10000000) return '₹' + (num / 10000000).toFixed(2) + ' Cr';
@@ -45,7 +45,7 @@ export default function PropertyDetail() {
             <div className="card">
               <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
                 {prop.images && prop.images.length > 0 ? (
-                  <img src={`http://localhost:5000${prop.images[0]}`} alt={prop.title} style={{ width: 100, height: 100, objectFit: 'cover', borderRadius: 'var(--radius-sm)' }} />
+                  <img src={`${BASE_URL}${prop.images[0]}`} alt={prop.title} style={{ width: 100, height: 100, objectFit: 'cover', borderRadius: 'var(--radius-sm)' }} />
                 ) : (
                   <div style={{ fontSize: '4rem' }}>{TYPE_ICONS[prop.type] || '🏠'}</div>
                 )}
